@@ -54,7 +54,7 @@ def build_base(structure: dict) -> None:
     homepage = check_string(structure.get("homepage"))
     github_link = check_string(structure.get("github_link"))
     github_issues = github_link + "/issuses"
-    dependencies = check_string(structure.get("dependencies"))
+    dependencies = structure.get("dependencies")
 
     generate_file(
         PYPROJECT_TOML.replace("%proj_name%", proj_name)
@@ -86,8 +86,8 @@ def create_venv(structure: dict) -> None:
     :type structure: dict
     """
 
-    dependencies = check_string(structure.get("dependencies"))
-    dev_dependencies = check_string(structure.get("dev_dependencies"))
+    dependencies = structure.get("dependencies")
+    dev_dependencies = structure.get("dev_dependencies")
     pip = "venv/bin/pip"
 
     if platform.system() == "Windows":
