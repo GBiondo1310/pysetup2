@@ -129,9 +129,11 @@ def git_configuration(structure: dict) -> None:
     branches = structure.get("git").get("branches")
 
     for branch in branches:
+        if branch == "master":
+            continue
         os.system(f"git checkout -b {branch}")
 
-    os.system("git checkout master")
+    os.system("git checkout -b master")
 
     os.system("git add .")
 
