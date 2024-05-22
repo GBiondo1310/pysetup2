@@ -176,7 +176,7 @@ class ModulesBuilder:
     def build_modules_structure(self, structure) -> None:
         """Builds the module structure"""
 
-        structure = self.structure.get("structure")
+        structure = structure.get("structure")
         for element in structure:
             if isinstance(element, dict):
                 self.build_inner_structure(element)
