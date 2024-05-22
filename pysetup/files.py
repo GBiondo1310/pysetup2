@@ -186,3 +186,66 @@ if __name__ == "__main__":
         system("rm branches")
         system(f"git push origin {branch}")
 """
+
+
+STRUCT = """{
+    "project_name_required":"Your project name here",
+    "project_version": "0.0",
+    "project_description":"Project brief description",
+    "author":"Author",
+    "author_email":"Your email here",
+    "homepage":"Homepage of the project",
+    "github_link":"Github repo link",
+    "github_issues":"Github issues link here",
+    "gitignore_files":[
+        "scripts",
+        "struct.json",
+        "docs/*",
+        "!dics/_build",
+        "docs/_build/doctrees",
+        "logs",
+        ".vscode"
+    ],
+    "dependencies":[],
+    "dev_dependencies":["pylogger@git+https://github.com/GBiondo1310/pylogger.git"],
+    "use_commit_script":true,
+    "configure_test_folder":true,
+    "use_sphinx":true,
+    "configure_git":true,
+    "configure_github":true,
+    "git":{
+        "branches":[
+            "master",
+            "dev"
+        ],
+        "github":{
+            "remotes":{
+                "origin":"github_link"
+            }
+        }
+    },
+    "structure":[
+        {
+            "scripts":[
+                "main.py"
+            ]
+        },
+            {
+                "package_name":[
+                    "__init__.py",
+                    "__main__.py",
+                    {
+                        "subpackage1":[
+                            "__init__.py"
+                        ],
+                        "subpackage2":[
+                            "__init__.py"
+                        ]
+                    }
+                ]
+            },
+        "other.file",
+        "other.file2"
+    ]
+
+}"""

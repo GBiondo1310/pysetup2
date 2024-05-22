@@ -3,7 +3,7 @@
 
 # How to install
 ```
-pip install pysetup@git+"https://github.com/GBiondo1310/pysetup.git#egg=<pysetup>"
+pip install pysetup@git+"https://github.com/GBiondo1310/pysetup2.git"
 ```
 # Run
 to create the struct.json default file
