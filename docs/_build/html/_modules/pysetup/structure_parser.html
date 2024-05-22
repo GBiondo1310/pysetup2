@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pysetup.structure_parser &mdash; pysetup2 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pysetup2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pysetup2</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pysetup2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pysetup.structure_parser</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pysetup.structure_parser</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">RequiredFieldError</span>
+<span class="kn">from</span> <span class="nn">._funcs</span> <span class="kn">import</span> <span class="n">general_logger</span><span class="p">,</span> <span class="n">check_string</span><span class="p">,</span> <span class="n">generate_file</span>
+<span class="kn">from</span> <span class="nn">.files</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PYPROJECT_TOML</span><span class="p">,</span>
+    <span class="n">MIT_LICENSE</span><span class="p">,</span>
+    <span class="n">README</span><span class="p">,</span>
+    <span class="n">GITIGNORE</span><span class="p">,</span>
+    <span class="n">TEST_EXAMPLE</span><span class="p">,</span>
+    <span class="n">TEST_MAIN</span><span class="p">,</span>
+    <span class="n">COMMIT_PY</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">LOGGER_PATH</span> <span class="o">=</span> <span class="s2">&quot;structure_parser&quot;</span>
+
+
+<div class="viewcode-block" id="read_struct">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.read_struct">[docs]</a>
+<span class="k">def</span> <span class="nf">read_struct</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads the structure of the project from the struct.json file</span>
+
+<span class="sd">    :return: The structure dictionary</span>
+<span class="sd">    :rtype: dict</span>
+
+<span class="sd">    :raises:</span>
+<span class="sd">        * FileNotFoundError: If there&#39;s no struct.json file in the current folder</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;struct.json&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">struct_file</span><span class="p">:</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">struct_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">structure</span></div>
+
+
+
+<div class="viewcode-block" id="build_base">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.build_base">[docs]</a>
+<span class="k">def</span> <span class="nf">build_base</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Builds the following:</span>
+<span class="sd">        - .gitignore file;</span>
+<span class="sd">        - LICENSE file;</span>
+<span class="sd">        - pyproject.toml file;</span>
+<span class="sd">        - README.md file;</span>
+<span class="sd">        - venv</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file.</span>
+<span class="sd">    :type structure: dict</span>
+
+<span class="sd">    :raises:</span>
+<span class="sd">        * RequiredFieldError: Inherited from :func:`check_string()`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">FUNC_PATH</span> <span class="o">=</span> <span class="s2">&quot;build_base&quot;</span>
+
+    <span class="n">proj_name</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_name_required&quot;</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_version&quot;</span><span class="p">))</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;0.0&quot;</span> <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;//&quot;</span> <span class="k">else</span> <span class="n">version</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_description&quot;</span><span class="p">))</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;author&quot;</span><span class="p">))</span>
+    <span class="n">author_email</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;author_email&quot;</span><span class="p">))</span>
+    <span class="n">homepage</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;homepage&quot;</span><span class="p">))</span>
+    <span class="n">github_link</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;github_link&quot;</span><span class="p">))</span>
+    <span class="n">github_issues</span> <span class="o">=</span> <span class="n">github_link</span> <span class="o">+</span> <span class="s2">&quot;/issuses&quot;</span>
+    <span class="n">dependencies</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dependencies&quot;</span><span class="p">))</span>
+
+    <span class="n">generate_file</span><span class="p">(</span>
+        <span class="n">PYPROJECT_TOML</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;%proj_name%&quot;</span><span class="p">,</span> <span class="n">proj_name</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;%version%&quot;</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%a</span><span class="s2">uthor%&quot;</span><span class="p">,</span> <span class="n">author</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%e</span><span class="s2">mail%&quot;</span><span class="p">,</span> <span class="n">author_email</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;%brief%&quot;</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">ependencies%&quot;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dependencies</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%ho</span><span class="s2">mepage%&quot;</span><span class="p">,</span> <span class="n">homepage</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2">ithub%&quot;</span><span class="p">,</span> <span class="n">github_link</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%i</span><span class="s2">ssues%&quot;</span><span class="p">,</span> <span class="n">github_issues</span><span class="p">),</span>
+        <span class="s2">&quot;pyproject.toml&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">generate_file</span><span class="p">(</span>
+        <span class="n">MIT_LICENSE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%a</span><span class="s2">uthor%&quot;</span><span class="p">,</span> <span class="n">author</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="s2">&quot;%year%&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;LICENSE&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">generate_file</span><span class="p">(</span><span class="n">README</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2">ithub_link%&quot;</span><span class="p">,</span> <span class="n">github_link</span><span class="p">),</span> <span class="s2">&quot;README.md&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_venv">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.create_venv">[docs]</a>
+<span class="k">def</span> <span class="nf">create_venv</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a vistual environment and installs dependencies and dev dependencies</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dependencies</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dependencies&quot;</span><span class="p">))</span>
+    <span class="n">dev_dependencies</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dev_dependencies&quot;</span><span class="p">))</span>
+    <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/bin/pip&quot;</span>
+
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;python -m venv venv&quot;</span><span class="p">)</span>
+
+        <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/Scripts/pip.exe&quot;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;python3 -m venv venv&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dependency</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pip</span><span class="si">}</span><span class="s2"> install </span><span class="si">{</span><span class="n">dependency</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dependency</span> <span class="ow">in</span> <span class="n">dev_dependencies</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pip</span><span class="si">}</span><span class="s2"> install </span><span class="si">{</span><span class="n">dependency</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="git_configuration">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.git_configuration">[docs]</a>
+<span class="k">def</span> <span class="nf">git_configuration</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configures git and github</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">git</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_git&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">git</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">github</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_github&quot;</span><span class="p">)</span>
+
+    <span class="n">gitignore_files</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gitignore_files&quot;</span><span class="p">)</span>
+
+    <span class="n">gitignore_files</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gitignore_files</span><span class="p">)</span>
+
+    <span class="n">generate_file</span><span class="p">(</span><span class="n">GITIGNORE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2">itignore_files%&quot;</span><span class="p">,</span> <span class="n">gitignore_files</span><span class="p">),</span> <span class="s2">&quot;.gitignore&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;git init&quot;</span><span class="p">)</span>
+
+    <span class="n">branches</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;git&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;branches&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">branches</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">branch</span> <span class="o">!=</span> <span class="s2">&quot;master&quot;</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git checkout -b </span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;git checkout master&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;git add .&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;git commit -m &quot;Initial commit - $(date)&quot;&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">github</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="n">remotes</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;git&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;github&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remotes&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">remotes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git remote add </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git push </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> master&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ModulesBuilder">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.ModulesBuilder">[docs]</a>
+<span class="k">class</span> <span class="nc">ModulesBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class made to easily build structure</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ModulesBuilder.build_inner_structure">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.ModulesBuilder.build_inner_structure">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_inner_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parses the struct and creates folders / files for the module / submodules</span>
+
+<span class="sd">        :param structure: The structure of the project as in struct.json file</span>
+<span class="sd">        :type structure: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">folder</span><span class="p">,</span> <span class="n">struct</span> <span class="ow">in</span> <span class="n">structure</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">struct</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">build_inner_structure</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;touch </span><span class="si">{</span><span class="n">element</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ModulesBuilder.build_modules_structure">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.ModulesBuilder.build_modules_structure">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_modules_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the module structure&quot;&quot;&quot;</span>
+
+        <span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;structure&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">build_inner_structure</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;touch </span><span class="si">{</span><span class="n">element</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="sphinx_configuration">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.sphinx_configuration">[docs]</a>
+<span class="k">def</span> <span class="nf">sphinx_configuration</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configures sphinx documentation</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_sphinx&quot;</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/bin/pip&quot;</span>
+
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+        <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/Scripts/pip.exe&quot;</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pip</span><span class="si">}</span><span class="s2"> install sphinx sphinx-rtd-theme&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;docs&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;docs&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sphinx-quickstart&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sphinx-apidoc -o docs .&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;docs/index.rst&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_rst</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">index_rst</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">insert_line_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;:caption:&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">insert_line_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">2</span>
+
+    <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">insert_line_index</span><span class="p">,</span> <span class="s2">&quot;modules&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;docs/index.rst&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_rst</span><span class="p">:</span>
+        <span class="n">index_rst</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;docs/conf.py&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_py</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">conf_py</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">insert_line_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;alabaster&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">lines</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;alabaster&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx_rtd_theme&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;extensions = []&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">line</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;extensions = [&quot;sphinx.ext.todo&quot;, &quot;sphinx.ext.viewcode&quot;, &quot;sphinx.ext.autodoc&quot;]&#39;</span>
+            <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;project = &quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">insert_line_index</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+        <span class="n">insert_line_index</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;import os</span>
+<span class="sd">import sys</span>
+
+<span class="sd">sys.path.insert(0, os.path.abspath(&quot;..&quot;))&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;docs/conf.py&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_py</span><span class="p">:</span>
+        <span class="n">conf_py</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;docs&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;sphinx-build -M html . _build&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tests_configuration">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.tests_configuration">[docs]</a>
+<span class="k">def</span> <span class="nf">tests_configuration</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configures test folder</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_test_folder&quot;</span><span class="p">)):</span>
+        <span class="k">return</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;tests&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;tests&quot;</span><span class="p">)</span>
+
+    <span class="n">generate_file</span><span class="p">(</span><span class="n">TEST_MAIN</span><span class="p">,</span> <span class="s2">&quot;test.py&quot;</span><span class="p">)</span>
+    <span class="n">generate_file</span><span class="p">(</span><span class="n">TEST_EXAMPLE</span><span class="p">,</span> <span class="s2">&quot;test_example.py&quot;</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_commit">
+<a class="viewcode-back" href="../../pysetup.html#pysetup.structure_parser.create_commit">[docs]</a>
+<span class="k">def</span> <span class="nf">create_commit</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a custom script which makes tests, generates documentation, commits and pushes all in one</span>
+<span class="sd">    NOTE: The file is generated ONLY if the following flags are set to trye in structure.json:</span>
+
+<span class="sd">    * &quot;configure_test_folder&quot;</span>
+<span class="sd">    * &quot;use_sphinx&quot;</span>
+<span class="sd">    * &quot;configure_git&quot;</span>
+<span class="sd">    * &quot;configure_github&quot;</span>
+
+<span class="sd">    :param structure: The structure of the project retreived from struct.json file</span>
+<span class="sd">    :type structure: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">configure_test_folder</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_test_folder&quot;</span><span class="p">)</span>
+    <span class="n">use_sphinx</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_sphinx&quot;</span><span class="p">)</span>
+    <span class="n">configure_git</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_git&quot;</span><span class="p">)</span>
+    <span class="n">configure_github</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;configure_github&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">configure_test_folder</span> <span class="ow">and</span> <span class="n">use_sphinx</span> <span class="ow">and</span> <span class="n">configure_git</span> <span class="ow">and</span> <span class="n">configure_github</span><span class="p">:</span>
+        <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/bin/pip&quot;</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
+            <span class="n">pip</span> <span class="o">=</span> <span class="s2">&quot;venv/Scripts/pip.exe&quot;</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pip</span><span class="si">}</span><span class="s2"> install pick&quot;</span><span class="p">)</span>
+        <span class="n">generate_file</span><span class="p">(</span><span class="n">COMMIT_PY</span><span class="p">,</span> <span class="s2">&quot;commit.py&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, GBiondo1310.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

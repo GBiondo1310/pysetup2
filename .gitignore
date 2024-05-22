@@ -1,0 +1,8 @@
+venv
+__pycache__
+tests
+*egg-info
+.vscode
+docs/*
+!docs/_build
+docs/_build/doctrees

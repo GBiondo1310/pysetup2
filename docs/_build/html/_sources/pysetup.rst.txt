@@ -1,0 +1,37 @@
+pysetup package
+===============
+
+Submodules
+----------
+
+pysetup.exceptions module
+-------------------------
+
+.. automodule:: pysetup.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pysetup.files module
+--------------------
+
+.. automodule:: pysetup.files
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pysetup.structure\_parser module
+--------------------------------
+
+.. automodule:: pysetup.structure_parser
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pysetup
+   :members:
+   :undoc-members:
+   :show-inheritance:
