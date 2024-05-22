@@ -1,10 +1,7 @@
-from pylogger import general_logger
-
-
 class RequiredFieldError(Exception):
     '''Raised when an input is == ""'''
 
-    def __init__(self, data: str, function: str):
+    def __init__(self, data: str):
         """Raised when an input is == ""
         :param data: Additional error data, tipically ``format_exc()``
         :type data: str
@@ -12,5 +9,4 @@ class RequiredFieldError(Exception):
         :type func: str"""
 
         message = f"RequiredFieldError: {data}"
-        general_logger.error(message, function)
         super().__init__(message)

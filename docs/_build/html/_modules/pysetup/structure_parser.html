@@ -77,8 +77,7 @@
 
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">RequiredFieldError</span>
-<span class="kn">from</span> <span class="nn">._funcs</span> <span class="kn">import</span> <span class="n">general_logger</span><span class="p">,</span> <span class="n">check_string</span><span class="p">,</span> <span class="n">generate_file</span>
+<span class="kn">from</span> <span class="nn">._funcs</span> <span class="kn">import</span> <span class="n">check_string</span><span class="p">,</span> <span class="n">generate_file</span>
 <span class="kn">from</span> <span class="nn">.files</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">PYPROJECT_TOML</span><span class="p">,</span>
     <span class="n">MIT_LICENSE</span><span class="p">,</span>
@@ -88,8 +87,6 @@
     <span class="n">TEST_MAIN</span><span class="p">,</span>
     <span class="n">COMMIT_PY</span><span class="p">,</span>
 <span class="p">)</span>
-
-<span class="n">LOGGER_PATH</span> <span class="o">=</span> <span class="s2">&quot;structure_parser&quot;</span>
 
 
 <div class="viewcode-block" id="read_struct">
@@ -125,8 +122,6 @@
 <span class="sd">    :raises:</span>
 <span class="sd">        * RequiredFieldError: Inherited from :func:`check_string()`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">FUNC_PATH</span> <span class="o">=</span> <span class="s2">&quot;build_base&quot;</span>
 
     <span class="n">proj_name</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_name_required&quot;</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">version</span> <span class="o">=</span> <span class="n">check_string</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_version&quot;</span><span class="p">))</span>

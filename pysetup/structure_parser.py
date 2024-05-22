@@ -4,8 +4,7 @@ import platform
 
 from datetime import datetime
 
-from .exceptions import RequiredFieldError
-from ._funcs import general_logger, check_string, generate_file
+from ._funcs import check_string, generate_file
 from .files import (
     PYPROJECT_TOML,
     MIT_LICENSE,
@@ -15,8 +14,6 @@ from .files import (
     TEST_MAIN,
     COMMIT_PY,
 )
-
-LOGGER_PATH = "structure_parser"
 
 
 def read_struct() -> dict:
@@ -47,8 +44,6 @@ def build_base(structure: dict) -> None:
     :raises:
         * RequiredFieldError: Inherited from :func:`check_string()`
     """
-
-    FUNC_PATH = "build_base"
 
     proj_name = check_string(structure.get("project_name_required"), True)
     version = check_string(structure.get("project_version"))

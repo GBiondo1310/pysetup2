@@ -1,5 +1,5 @@
 from platform import system
-from .exceptions import RequiredFieldError, general_logger
+from .exceptions import RequiredFieldError
 
 LOGGER_PATH = "_funcs"
 
@@ -39,20 +39,12 @@ def check_string(text: str, required: bool = False) -> str:
         * RequiredFieldError if the text is required and == ""
     """
 
-    FUNC_PATH = "check_string"
-
-    general_logger.info(f"Checking string: {text}", f"{LOGGER_PATH}.{FUNC_PATH}")
-
     if text.replace(" ", "") == "":
         if required:
-            raise RequiredFieldError(
-                "The field is required", f"{LOGGER_PATH}.{FUNC_PATH}"
-            )
+            raise RequiredFieldError("The field is required")
         else:
-            general_logger.success("Check string => //", f"{LOGGER_PATH}.{FUNC_PATH}")
             return "//"
 
-    general_logger.success("String is valid", f"{LOGGER_PATH}.{FUNC_PATH}")
     return text
 
 

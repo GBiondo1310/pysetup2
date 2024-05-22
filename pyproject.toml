@@ -10,12 +10,7 @@ authors = [
 ]
 description = "Set up your new python project quickly"
 readme = "README.md"
-dependencies = [
-    "progress==1.6",
-    "progressbar2==4.4.2",
-    "alive-progress==3.1.5",
-    "tqdm==4.66.2"
-]
+dependencies = []
 
 requires-python = ">=3.8"
 classifiers = [
