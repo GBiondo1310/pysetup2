@@ -173,7 +173,7 @@ class ModulesBuilder:
 
             os.chdir("..")
 
-    def build_modules_structure(self) -> None:
+    def build_modules_structure(self, structure) -> None:
         """Builds the module structure"""
 
         structure = self.structure.get("structure")
